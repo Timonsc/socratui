@@ -353,6 +353,31 @@ fn home(f: &mut Frame, area: Rect, app: &App) {
 
 // ---- tutoring ----
 
+/// Wraps prose to `width`. Lines inside ``` fences keep their layout, so code
+/// and diagrams line up, and are cut with `…` when wider than the pane.
+fn message(text: &str, width: usize) -> Vec<Line<'static>> {
+    let code = Style::new().fg(Color::Yellow);
+    let mut lines = Vec::new();
+    let mut in_code = false;
+    for row in text.lines() {
+        let fence = row.trim_start().starts_with("```");
+        if in_code || fence {
+            let row = if row.width() > width {
+                fit(row, width)
+            } else {
+                row.to_string()
+            };
+            lines.push(Line::styled(row, code));
+        } else if row.trim().is_empty() {
+            lines.push(Line::default());
+        } else {
+            lines.extend(wrap(row, width).into_iter().map(Line::from));
+        }
+        in_code ^= fence;
+    }
+    lines
+}
+
 fn transcript(chat: &Chat, width: usize) -> Vec<Line<'static>> {
     let mut lines: Vec<Line> = Vec::new();
     let speech = |lines: &mut Vec<Line<'static>>, who: &str, colour: Color, text: &str| {
@@ -360,17 +385,7 @@ fn transcript(chat: &Chat, width: usize) -> Vec<Line<'static>> {
             lines.push(Line::default());
         }
         lines.push(Line::styled(who.to_string(), bold().fg(colour)));
-        let mut in_code = false;
-        for row in wrap(text, width) {
-            let fence = row.trim_start().starts_with("```");
-            let style = if in_code || fence {
-                Style::new().fg(Color::Yellow)
-            } else {
-                Style::new()
-            };
-            in_code ^= fence;
-            lines.push(Line::styled(row, style));
-        }
+        lines.extend(message(text, width));
         lines.push(Line::default());
     };
 
@@ -529,15 +544,15 @@ fn cards(f: &mut Frame, area: Rect, review: &CardReview) {
     };
     let mut lines = vec![Line::styled(source, dim()), Line::default()];
     lines.extend(
-        wrap(&card.front, inner)
+        message(&card.front, inner)
             .into_iter()
-            .map(|l| Line::styled(l, bold())),
+            .map(|l| l.patch_style(bold())),
     );
     lines.push(Line::default());
     if review.revealed {
         lines.push(Line::styled("─".repeat(inner), dim()));
         lines.push(Line::default());
-        lines.extend(wrap(&card.back, inner).into_iter().map(Line::from));
+        lines.extend(message(&card.back, inner));
         lines.push(Line::default());
         let mut buttons = Vec::new();
         for (key, grade, label) in [
@@ -824,5 +839,24 @@ fn draw_modal(f: &mut Frame, modal: &Modal) {
                 area,
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn rows(text: &str, width: usize) -> Vec<String> {
+        message(text, width).iter().map(|l| l.to_string()).collect()
+    }
+
+    #[test]
+    fn diagrams_keep_their_layout_and_prose_wraps() {
+        let text = "one two three four\n\n```\n[A] ---> [B] ---> [C]\n```";
+        assert_eq!(
+            rows(text, 10),
+            ["one two", "three four", "", "```", "[A] ---> …", "```",]
+        );
+        assert_eq!(rows(text, 30)[3], "[A] ---> [B] ---> [C]");
     }
 }
