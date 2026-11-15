@@ -3,13 +3,30 @@
 
 use crate::db::Card;
 
+/// Escapes a card side for Anki's HTML import. ``` fences become `<pre>`, so
+/// code and diagrams keep their spacing.
 fn field(text: &str) -> String {
-    text.replace('&', "&amp;")
-        .replace('<', "&lt;")
-        .replace('>', "&gt;")
-        .replace('\t', "    ")
-        .replace("\r\n", "\n")
-        .replace('\n', "<br>")
+    let mut out: Vec<String> = Vec::new();
+    let mut in_code = false;
+    for line in text.lines() {
+        if line.trim_start().starts_with("```") {
+            in_code = !in_code;
+            out.push(if in_code { "<pre>" } else { "</pre>" }.to_string());
+            continue;
+        }
+        out.push(
+            line.replace('&', "&amp;")
+                .replace('<', "&lt;")
+                .replace('>', "&gt;")
+                .replace('\t', "    "),
+        );
+    }
+    if in_code {
+        out.push("</pre>".to_string());
+    }
+    out.join("<br>")
+        .replace("<pre><br>", "<pre>")
+        .replace("<br></pre>", "</pre>")
 }
 
 fn tag(text: &str) -> String {
@@ -75,5 +92,14 @@ mod tests {
             rows[5],
             "What does Vec&lt;T&gt;    mean?\tline one<br>line two\tSocratui::Rust: Lifetimes & Borrowing\tsocratui rust-lifetimes-borrowing elision-rules"
         );
+    }
+
+    #[test]
+    fn fenced_blocks_become_pre() {
+        assert_eq!(
+            field("Order?\n```text\n[A] --> [B]\n  x < y\n```\ndone"),
+            "Order?<br><pre>[A] --&gt; [B]<br>  x &lt; y</pre><br>done"
+        );
+        assert_eq!(field("```\nopen"), "<pre>open</pre>");
     }
 }
