@@ -214,6 +214,7 @@ class World:
         # `env` runs after the shell's startup files, so a key they export
         # cannot reach the app.
         cmd = ["env", "-u", "ANTHROPIC_API_KEY", "-u", "OPENAI_API_KEY", "-u", "HF_TOKEN",
+               "-u", "OPENROUTER_API_KEY",
                "-u", "SOCRATUI_MODEL", "-u", "SOCRATUI_DATA_DIR", "-u", "XDG_DATA_HOME",
                f"HOME={self.base}", str(BIN)]
         self.tmux("-f", str(conf), "new-session", "-d", "-s", "demo", "-x", str(COLS), "-y", str(ROWS),

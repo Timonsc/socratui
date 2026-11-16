@@ -638,7 +638,12 @@ fn draw_modal(f: &mut Frame, modal: &Modal) {
         Modal::Model(_) => PICKER_ROWS as u16 + 7,
         _ => 8,
     };
-    let (width, height) = (screen.width.min(64), height.min(screen.height));
+    // The provider buttons need 76 columns once there are five of them.
+    let width = match modal {
+        Modal::Setup(_) => 76,
+        _ => 64,
+    };
+    let (width, height) = (screen.width.min(width), height.min(screen.height));
     let area = Rect::new(
         screen.x + (screen.width - width) / 2,
         screen.y + (screen.height - height) / 2,
@@ -768,7 +773,7 @@ fn draw_modal(f: &mut Frame, modal: &Modal) {
                     Line::from(setup.kind.about()),
                     Line::default(),
                     hints(&[
-                        ("1-4", "choose"),
+                        (&format!("1-{}", Kind::ALL.len()), "choose"),
                         ("← →", "look"),
                         ("Enter", "choose"),
                         ("Esc", "close"),
