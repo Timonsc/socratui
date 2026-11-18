@@ -100,7 +100,7 @@ The home screen shows each topic's progress, its recent level changes with the r
 | Anthropic | API key | `claude-fable-5-2` |
 | OpenAI | API key | `gpt-5.6-sol` |
 | Hugging Face | token | `openai/gpt-oss-120b` |
-| OpenRouter | API key | `anthropic/claude-sonnet-5-5` |
+| OpenRouter | API key | `anthropic/claude-sonnet-5.5` |
 | Local model | server address, `http://localhost:8080/v1` by default | whatever the server loaded |
 
 > [!NOTE]

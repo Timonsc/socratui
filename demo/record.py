@@ -581,7 +581,7 @@ def scene_setup():
     w = World(configured=False)
     with Recorder(w) as rec:
         time.sleep(2.5)
-        for _ in range(3):
+        for _ in range(4):
             w.keys("Right", gap=1.6)
         w.keys("Enter", gap=2.2)
         w.keys("Enter", gap=2.2)

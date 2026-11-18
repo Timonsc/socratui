@@ -79,7 +79,7 @@ impl Kind {
             Kind::OpenAi => &["gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"],
             Kind::HuggingFace => &["openai/gpt-oss-120b", "deepseek-ai/DeepSeek-R1-0528"],
             Kind::OpenRouter => &[
-                "anthropic/claude-sonnet-5-5",
+                "anthropic/claude-sonnet-5.5",
                 "openai/gpt-5.6-sol",
                 "openai/gpt-oss-120b",
             ],
@@ -92,7 +92,7 @@ impl Kind {
             Kind::Anthropic => "claude-fable-5-2",
             Kind::OpenAi => "gpt-5.6-sol",
             Kind::HuggingFace => "openai/gpt-oss-120b",
-            Kind::OpenRouter => "anthropic/claude-sonnet-5-5",
+            Kind::OpenRouter => "anthropic/claude-sonnet-5.5",
             // llama-server answers with whichever model it loaded.
             Kind::Local => "local",
         }
@@ -198,7 +198,7 @@ mod tests {
         let provider = Provider::from_env(only).unwrap();
         assert_eq!(provider.kind, Kind::OpenRouter);
         assert_eq!(provider.base_url, "https://openrouter.ai/api/v1");
-        assert_eq!(provider.model, "anthropic/claude-sonnet-5-5");
+        assert_eq!(provider.model, "anthropic/claude-sonnet-5.5");
 
         let both =
             |name: &str| matches!(name, "HF_TOKEN" | "OPENROUTER_API_KEY").then(|| "k".to_string());
